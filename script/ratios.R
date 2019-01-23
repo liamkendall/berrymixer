@@ -6,8 +6,9 @@ library(dplyr)
 #load data
 berry <- read.csv("data/BLUEBERRY_MIXED.csv", header=T)
 
+#subset dataframe to just visitation treatment
 #convert all visitor columns to character
-berry_updated <- berry %>% mutate_at(vars(19:33), as.character)
+berry_updated <- berry[berry$TREATMENT%in%"V" & berry$TVN > 0,] %>% mutate_at(vars(19:33), as.character)
 
 #retain only first letter of the string for visitors IDs
 berry_updated2 <- berry_updated %>% mutate_at(vars(19:33), word)
