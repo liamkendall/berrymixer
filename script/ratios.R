@@ -3,6 +3,8 @@ library(stringr)
 library(plyr)
 library(dplyr)
 library(glmmTMB)
+library(lme4)
+library(ggplot2)
 
 #load data
 berry <- read.csv("data/BLUEBERRY_MIXED_V2.csv", header=T)
