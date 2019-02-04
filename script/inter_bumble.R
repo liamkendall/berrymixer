@@ -31,17 +31,22 @@ berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$su
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
 
-bumble=berry_updated2[berry_updated2$Species%in%"BR" & berry_updated2$SPEC.COM%in%"MX" ,]
+bumble=berry_updated2[berry_updated2$Species%in%"BR" & bumble$SPEC.COM%in%"MX" ,]
 
 bumble$Visitor1=as.factor(bumble$Visitor1)
-bumble$Visitor1=relevel(bumble$Visitor1,ref="H")
+bumble$Visitor1=relevel(bumble$Visitor1,ref="B")
 
-table(bumble$sumvisits)
+table(bumble$SPEC.COM)
 
 #priority effects models - fruit set
 m1 <- glm(FS~Visitor1*sumvisits,
               family="binomial",
               data = bumble)
+
+m1 <- glm(FS~SPEC.COM+sumvisits,
+          family="binomial",
+          data = bumble)
+
 summary(m1)
 rsq::rsq.n(m1)
 
