@@ -8,10 +8,10 @@ library(ggplot2)
 
 #load data
 berry <- read.csv("data/BLUEBERRY_MIXED_V3.csv", header=T)
-berry$RP=paste(berry$Block,berry$Row,berry$Plant.number,sep="_")
+
 #subset dataframe to just visitation treatment
 #convert all visitor columns to character
-berry_updated <- berry[berry$TREATMENT%in%"V" & berry$TVN > 0,] %>% mutate_at(vars(19:33), as.character) %>% droplevels()
+berry_updated <- berry[berry$TREATMENT%in%"V" & berry$TVN > 1,] %>% mutate_at(vars(19:33), as.character) %>% droplevels()
 
 #retain only first letter of the string for visitors IDs
 berry_updated2 <- berry_updated %>% mutate_at(vars(19:33), word)
@@ -22,29 +22,42 @@ berry_updated2$honey_bee <- rowSums(berry_updated2[, c(19:33)] == "H")
 berry_updated2$bumble_bee <- rowSums(berry_updated2[, c(19:33)] == "B")
 
 #sum the total number of visits
-berry_updated2$sumvisits <- rowSums(berry_updated2[, c(38:40)])
+berry_updated2$sumvisits <- rowSums(berry_updated2[, c(37:39)])
 
 #calculate the percent visits from each taxa
 berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$sumvisits
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
-berry_updated3 <- berry_updated2[!berry_updated2$Species%in%"BR",]
+
+#remove Tasmania BB data
+berry_updated3 <- berry_updated2[!berry_updated2$Species%in%"BR",]%>%droplevels()
 
 #priority effects models
-m1 <- glmmTMB(FS~Visitor1*(sumvisits/p_honey_bee)+(1|Block/RP)+(1|Year),
+m1 <- glmmTMB(FS~Visitor1*sumvisits+(1|Block)+(1|Year),
                         family="binomial",
-                        data = berry_updated2)
+                        data = berry_updated3)
+summary(m1)
 
-m2 <- glmmTMB(Fresh.wgt~Visitor1*(sumvisits/p_honey_bee)+(1|Block/RP)+(1|Year),
+m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Block)+(1|Year),
               family="gaussian",
-              data = berry_updated2)
-
-m3 <- glmmTMB(FS~SPEC.COM*TVN+(1|Block/RP)+(1|Year),
-              family="binomial",
-              data = berry_updated2)
-
-m4 <- lmer(Fresh.wgt~SPEC.COM*TVN+p_honey_bee+(1|Block/RP)+(1|Year),
               data = berry_updated3)
+summary(m2)
+
+m3 <- glmmTMB(FS~SPEC.COM*sumvisits+(1|Block)+(1|Year),
+              family="binomial",
+              data = berry_updated3)
+summary(m3)
+
+m4 <- glmmTMB(Fresh.wgt~SPEC.COM*sumvisits+(1|Block)+(1|Year),
+              family="gaussian",
+              data = berry_updated3)
+summary(m4)
+
+#compare fruit set models
+AIC(m1,m3)
+
+#compare fruit weight models
+AIC(m2,m4)
 
 #create new dataframe
 pred <- expand.grid(SPEC.COM=unique(berry_updated3$SPEC.COM),
