@@ -39,9 +39,10 @@ rasp_updated2$p_stingless_bee <- rasp_updated2$stingless_bee/rasp_updated2$sumvi
 rasp_updated2$p_honey_bee <- rasp_updated2$honey_bee/rasp_updated2$sumvisits
 
 #priority effect model
-rasp_m1 <- glmmTMB(Weight~VISIT1*(sumvisits/p_honey_bee)+(1|BLOCK),
+rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
               family="gaussian",
               data = rasp_updated2)
+
 summary(rasp_m1)
 rasp_m1res=simulateResiduals(rasp_m1)
 plot(rasp_m1res)

@@ -38,10 +38,19 @@ m1 <- glmmTMB(FS~Visitor1*sumvisits+(1|Block)+(1|Year),
                         data = berry_updated3)
 summary(m1)
 
-m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Block)+(1|Year),
+
+
+m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Block),
               family="gaussian",
-              data = berry_updated3)
+              data = berry_updated3[berry_updated3$SPEC.COM%in%"MX",])
 summary(m2)
+
+plot_model(m2, type = "pred",terms = "Visitor1")
+
+emmeans::emtrends(m2, pairwise~Visitor1,var="sumvisits")
+
+emmeans::emmip(m2, Visitor1 ~ sumvisits,mult.name = "Visitor1", cov.reduce = FALSE)
+
 
 m3 <- glmmTMB(FS~SPEC.COM*sumvisits+(1|Block)+(1|Year),
               family="binomial",
@@ -52,6 +61,9 @@ m4 <- glmmTMB(Fresh.wgt~SPEC.COM*sumvisits+(1|Block)+(1|Year),
               family="gaussian",
               data = berry_updated3)
 summary(m4)
+emmeans::emtrends(m4, pairwise~SPEC.COM,var="sumvisits")
+table(berry_updated3$SPEC.COM)
+emmeans::emmip(m4, SPEC.COM ~ sumvisits,mult.name = "SPEC.COM", cov.reduce = FALSE)
 
 #compare fruit set models
 AIC(m1,m3)
