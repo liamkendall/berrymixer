@@ -3,6 +3,7 @@
 library(plyr)
 library(dplyr)
 library(DHARMa)
+library(glmmTMB)
 
 #left function
 left = function (string,char){

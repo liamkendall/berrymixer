@@ -29,47 +29,45 @@ berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$su
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
 
-#remove Tasmania BB data
+#remove Tasmania BB data and RE data 
+#due to very low fresh weight sample size (10 Mixed visits)
+table(berry_updated2[berry_updated2$Species%in%"RE" &
+        is.na(berry_updated2$Fresh.wgt)==FALSE,]$SPEC.COM)
+
 berry_updated3 <- berry_updated2[!berry_updated2$Species%in%"BR",]%>%droplevels()
+berry_updated3 <- berry_updated3[!berry_updated3$Species%in%"RE",]%>%droplevels()
+
+##Subset to 2 or more visits and only mixed visits
+berry_updated4=berry_updated3[berry_updated3$SPEC.COM%in%"MX"
+                              & berry_updated3$sumvisits >1,]%>%droplevels()
 
 #priority effects models
-m1 <- glmmTMB(FS~Visitor1*sumvisits+(1|Block)+(1|Year),
+m1 <- glmmTMB(FS~Visitor1*sumvisits+(1|Year),
                         family="binomial",
-                        data = berry_updated3)
+                        data = berry_updated4)
 summary(m1)
+plot_model(m1, type = "pred",terms = "Visitor1")
+plot_model(m1, type = "pred",terms = "sumvisits")
 
 
-
-m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Block),
+m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Year),
               family="gaussian",
-              data = berry_updated3[berry_updated3$SPEC.COM%in%"MX",])
-summary(m2)
+              data = berry_updated4)
 
 plot_model(m2, type = "pred",terms = "Visitor1")
+plot_model(m2, type = "pred",terms = "sumvisits")
 
-emmeans::emtrends(m2, pairwise~Visitor1,var="sumvisits")
+emtrends(m2, pairwise~Visitor1,var="sumvisits")
+#$contrasts
+#contrast estimate     SE df t.ratio p.value
+#H - S      0.0934 0.0307 77 3.044   0.0032
 
-emmeans::emmip(m2, Visitor1 ~ sumvisits,mult.name = "Visitor1", cov.reduce = FALSE)
+emmip(m2, Visitor1 ~ sumvisits,mult.name = "Visitor1", cov.reduce = FALSE)
 
 
-m3 <- glmmTMB(FS~SPEC.COM*sumvisits+(1|Block)+(1|Year),
-              family="binomial",
-              data = berry_updated3)
-summary(m3)
 
-m4 <- glmmTMB(Fresh.wgt~SPEC.COM*sumvisits+(1|Block)+(1|Year),
-              family="gaussian",
-              data = berry_updated3)
-summary(m4)
-emmeans::emtrends(m4, pairwise~SPEC.COM,var="sumvisits")
-table(berry_updated3$SPEC.COM)
-emmeans::emmip(m4, SPEC.COM ~ sumvisits,mult.name = "SPEC.COM", cov.reduce = FALSE)
+###LIAM STOPPED HERE - SPECIES COMP MODELS IN NEW SCRIPT
 
-#compare fruit set models
-AIC(m1,m3)
-
-#compare fruit weight models
-AIC(m2,m4)
 
 #create new dataframe
 pred <- expand.grid(SPEC.COM=unique(berry_updated3$SPEC.COM),
