@@ -9,10 +9,11 @@ library(glmmTMB)
 left = function (string,char){
   substr(string,1,char)
 }
+
 #load data
 rasp <- read.csv("data/raspberry.csv", header=T)
 
-
+rasp$MONTH
 #remove zeros
 rasp=rasp[!rasp$Weight==0,]
 rasp=rasp[,-which(names(rasp) %in% c("Comments","COMMENTS","POLLEN_DONOR"))]

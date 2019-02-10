@@ -51,11 +51,39 @@ plot_model(m1, type = "pred",terms = "sumvisits")
 
 
 m2 <- glmmTMB(Fresh.wgt~Visitor1*sumvisits+(1|Year),
+              family=gaussian,
+              data = berry_updated4)
+
+#check residuals
+m2res=simulateResiduals(m2)
+plot(m2res)
+testResiduals(m2res)
+#looks good
+
+m3<- glmmTMB(Fresh.wgt~Visitor1+sumvisits+(1|Year),
               family="gaussian",
               data = berry_updated4)
 
-plot_model(m2, type = "pred",terms = "Visitor1")
-plot_model(m2, type = "pred",terms = "sumvisits")
+#check residuals
+m3res=simulateResiduals(m3)
+plot(m3res)
+testResiduals(m3res)
+#looks good
+
+m4<- glmmTMB(Fresh.wgt~Visitor1*sumvisits+p_honey_bee+(1|Year),
+             family="gaussian",
+             data = berry_updated4)
+
+#check residuals
+m4res=simulateResiduals(m4)
+plot(m4res)
+testResiduals(m4res)
+#looks good
+
+AIC(m2,m3,m4)
+
+sjPlot::plot_model(m2, type = "pred",terms = "Visitor1")
+ sjPlot::plot_model(m2, type = "pred",terms = "sumvisits")
 
 emtrends(m2, pairwise~Visitor1,var="sumvisits")
 #$contrasts
