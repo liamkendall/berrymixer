@@ -32,6 +32,10 @@ berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$su
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
 
+berry_updated2$RP=paste0(berry_updated2$Row,berry_updated2$Plant.number)
+
+berry_updated2 <- berry_updated2[!(berry_updated2$SPEC.COM%in%"HB" & berry_updated2$sumvisits ==15),]%>%droplevels()
+
 #remove Tasmania BB data and RE data 
 #due to very low fresh weight sample size (10 Mixed visits)
 table(berry_updated2[berry_updated2$Species%in%"RE" &
@@ -137,7 +141,7 @@ p
 
 #log berry weight is better model
 berry_updated3$log.wgt <- log(berry_updated3$Fresh.wgt)
-m5 <- glmmTMB(log.wgt~SPEC.COM*sumvisits+(1|Block/Row)+(1|Year),
+m5 <- glmmTMB(log.wgt~SPEC.COM*sumvisits+(1|Block/RP)+(1|Year),
             family="gaussian",
             data = berry_updated3)
 
