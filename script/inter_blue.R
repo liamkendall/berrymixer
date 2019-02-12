@@ -8,6 +8,7 @@ library(ggplot2)
 library(MuMIn)
 library(DHARMa)
 library(emmeans)
+library(sjPlot)
 
 #load data
 berry <- read.csv("data/BLUEBERRY_MIXED_V3.csv", header=T)
@@ -31,9 +32,7 @@ berry_updated2$sumvisits <- rowSums(berry_updated2[, c(37:39)])
 berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$sumvisits
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
-
 berry_updated2$RP=paste0(berry_updated2$Row,berry_updated2$Plant.number)
-
 berry_updated2 <- berry_updated2[!(berry_updated2$SPEC.COM%in%"HB" & berry_updated2$sumvisits ==15),]%>%droplevels()
 
 #remove Tasmania BB data and RE data 
@@ -66,6 +65,8 @@ m2 <- glmmTMB(log.wgt~Visitor1*sumvisits*p_honey_bee+(1|Year),
               family=gaussian,
               data = berry_updated4)
 summary(m2)
+emtrends(m2, pairwise~Visitor1,var="p_honey_bee")
+
 #check residuals
 m2res=simulateResiduals(m2)
 plot(m2res)
@@ -144,8 +145,10 @@ berry_updated3$log.wgt <- log(berry_updated3$Fresh.wgt)
 m5 <- glmmTMB(log.wgt~SPEC.COM*sumvisits+(1|Block/RP)+(1|Year),
             family="gaussian",
             data = berry_updated3)
-
+summary(m5)
 emtrends(m5, pairwise~SPEC.COM,var="sumvisits")#no differences between taxa
+bb.emm <- emtrends(m5, pairwise~SPEC.COM,var="sumvisits")#no differences between taxa
+test(bb.emm, null = 0, side = ">")
 
 #check residuals
 m5res=simulateResiduals(m5)

@@ -44,9 +44,20 @@ rasp_updated2$p_honey_bee <- rasp_updated2$honey_bee/rasp_updated2$sumvisits
 rasp_updated2 <- rasp_updated2[!rasp_updated2$sumvisits >20,]%>%droplevels()
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"SB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"HB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
+rasp_updated2$RP <- paste0(rasp_updated2$ROW, rasp_updated2$PLANT)
 
 #count number of reps per number of visits for each taxa group
 table(rasp_updated2$VISIT1, rasp_updated2$sumvisits)
+
+#run priority effect model
+rasp_m1.d <- glmmTMB(Weight~VISIT1*sumvisits*p_honey_bee+(1|BLOCK),
+                   family="gaussian",
+                   data = rasp_updated2)
+summary(rasp_m1.d)
+        
+#dredge it and print csv
+dredge.rasp_m1 <- dredge(rasp_m1.d) # model excluding ratio is the best
+write.csv(dredge.rasp_m1, "/Users/macuser/Library/Mobile Documents/com~apple~CloudDocs/H_drive_DT/berrymixer/dredge.raspberryfruit.weight.csv")
 
 #run priority effect model
 rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
@@ -54,6 +65,10 @@ rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
               data = rasp_updated2)
 
 summary(rasp_m1)
+emtrends(rasp_m1, pairwise~VISIT1,var="sumvisits")
+#contrast   estimate         SE  df t.ratio p.value
+#H - S    0.02412012 0.03449389 246   0.699  0.4851
+
 rasp_m1res=simulateResiduals(rasp_m1)
 plot(rasp_m1res)
 
@@ -96,12 +111,13 @@ p
 table(rasp_updated2$POLLINATORS, rasp_updated2$sumvisits)
 
 #run the model
-rasp_m2 <- glmmTMB(Weight~sumvisits*POLLINATORS+(1|BLOCK),
+rasp_m2 <- glmmTMB(Weight~sumvisits*POLLINATORS+(1|BLOCK/RP),
             family="gaussian",
             data = rasp_updated2)
 
 summary(rasp_m2)
-emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")#no differences between taxa
+rasp.emm <- emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")#no differences between taxa
+test(rasp.emm, null = 0, side = ">")
 
 rasp_m2res=simulateResiduals(rasp_m2)
 plot(rasp_m2res)
@@ -122,7 +138,7 @@ p <- p + geom_ribbon(data=ras.comp.wght,
 p <- p + geom_line(data=ras.comp.wght, aes(xvar,yvar, colour=POLLINATORS), size=1)
 p <- p + scale_x_continuous(breaks=seq(2,20,2))
 p <- p + scale_y_continuous(breaks=seq(0,6,1))
-p <- p + geom_jitter(data = rasp_updated2, aes(x = sumvisits, y = Weight, colour=POLLINATORS), size=1.5, shape = 21, width=0, height =0.08)
+p <- p + geom_jitter(data = rasp_updated2, aes(x = sumvisits, y = Weight, colour=POLLINATORS), size=2, shape = 21, width=0, height =0.08)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
