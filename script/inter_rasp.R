@@ -46,13 +46,18 @@ rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"SB" & rasp_update
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"HB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
 rasp_updated2$RP <- paste0(rasp_updated2$ROW, rasp_updated2$PLANT)
 
+##Subset to 2 or more visits and only mixed visits
+rasp_updated3=rasp_updated2[rasp_updated2$POLLINATORS%in%"Mixed"
+                              & rasp_updated2$sumvisits >1,]%>%droplevels()
+rasp_updated3 <- rasp_updated3[!rasp_updated3$sumvisits >15,]%>%droplevels()
+
 #count number of reps per number of visits for each taxa group
-table(rasp_updated2$VISIT1, rasp_updated2$sumvisits)
+table(rasp_updated3$VISIT1, rasp_updated3$sumvisits)
 
 #run priority effect model
 rasp_m1.d <- glmmTMB(Weight~VISIT1*sumvisits*p_honey_bee+(1|BLOCK),
                    family="gaussian",
-                   data = rasp_updated2)
+                   data = rasp_updated3)
 summary(rasp_m1.d)
         
 #dredge it and print csv
@@ -62,12 +67,12 @@ write.csv(dredge.rasp_m1, "/Users/macuser/Library/Mobile Documents/com~apple~Clo
 #run priority effect model
 rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
               family="gaussian",
-              data = rasp_updated2)
+              data = rasp_updated3)
 
 summary(rasp_m1)
 emtrends(rasp_m1, pairwise~VISIT1,var="sumvisits")
 #contrast   estimate         SE  df t.ratio p.value
-#H - S    0.02412012 0.03449389 246   0.699  0.4851
+#H - S    0.01052346 0.05573458 114   0.189  0.8506
 
 rasp_m1res=simulateResiduals(rasp_m1)
 plot(rasp_m1res)
@@ -79,23 +84,23 @@ ras.wght.pred$xvar <- as.numeric(as.character(ras.wght.pred$xvar))
 
 #plot the data
 p <- ggplot()
-p <- p + xlab("Number of visits") + ylab("Fruit weight (g)")
-p <- p + theme(text = element_text(size=18))
+p <- p + xlab("Number of visits") + ylab("Raspberry fruit weight (g)")
 p <- p + geom_ribbon(data=ras.wght.pred,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=VISIT1), alpha = 0.5)
 p <- p + geom_line(data=ras.wght.pred, aes(xvar,yvar, colour=VISIT1), size=1)
-p <- p + scale_x_continuous(breaks=seq(2,20,2))
+p <- p + scale_x_continuous(breaks=seq(2,15,2))
 p <- p + scale_y_continuous(breaks=seq(0,6,1))
-p <- p + geom_jitter(data = rasp_updated2,aes(x = sumvisits, y = Weight, colour=VISIT1), size=1.5, shape = 21, width=0, height =0.08)
+p <- p + geom_jitter(data = rasp_updated3,aes(x = sumvisits, y = Weight, colour=VISIT1), 
+                     size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
                panel.grid.minor = element_blank(),
                panel.background = element_blank()) +
-  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.x=element_text(size=16, vjust = 1),
-        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.y=element_text(size=16, vjust = 1),
+  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.x=element_text(size=20, vjust = 1),
+        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.y=element_text(size=20, vjust = 1),
         axis.text=element_text(colour = "black"))+
   theme(axis.ticks.length = unit(2, "mm"),
         axis.ticks = element_line(colour = 'black', size = 0.4))+
@@ -131,23 +136,22 @@ ras.comp.wght <- ras.comp.wght[!(ras.comp.wght$POLLINATORS%in%"HB" & ras.comp.wg
 
 #plot the data
 p <- ggplot()
-p <- p + xlab("Number of visits") + ylab("Fruit weight (g)")
-p <- p + theme(text = element_text(size=18))
+p <- p + xlab("Number of visits") + ylab("Raspberry fruit weight (g)")
 p <- p + geom_ribbon(data=ras.comp.wght,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=POLLINATORS), alpha = 0.5)
 p <- p + geom_line(data=ras.comp.wght, aes(xvar,yvar, colour=POLLINATORS), size=1)
 p <- p + scale_x_continuous(breaks=seq(2,20,2))
 p <- p + scale_y_continuous(breaks=seq(0,6,1))
-p <- p + geom_jitter(data = rasp_updated2, aes(x = sumvisits, y = Weight, colour=POLLINATORS), size=2, shape = 21, width=0, height =0.08)
+p <- p + geom_jitter(data = rasp_updated2, aes(x = sumvisits, y = Weight, colour=POLLINATORS), size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
                panel.grid.minor = element_blank(),
                panel.background = element_blank()) +
-  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.x=element_text(size=16, vjust = 1),
-        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.y=element_text(size=16, vjust = 1),
+  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.x=element_text(size=20, vjust = 1),
+        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.y=element_text(size=20, vjust = 1),
         axis.text=element_text(colour = "black"))+
   theme(axis.ticks.length = unit(2, "mm"),
         axis.ticks = element_line(colour = 'black', size = 0.4))+

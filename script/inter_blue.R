@@ -93,10 +93,13 @@ sjPlot::plot_model(m3, type = "pred",terms = "Visitor1")
 sjPlot::plot_model(m3, type = "pred",terms = "sumvisits")
 
 #compare slopes
-emtrends(m3, pairwise~Visitor1,var="sumvisits")
+x <- emtrends(m3, pairwise~Visitor1,var="sumvisits")
+test(x)
 #$contrasts
 #contrast  estimate       SE df t.ratio p.value
 #H - S    0.0783168 0.027268 78   2.872  0.0052
+
+0.8783986/1.6449803*100
 
 #extract estimates etc
 wght.pred <- emmip(m3, Visitor1 ~ sumvisits, mult.name = "Visitor1", cov.reduce = FALSE, CIs = T, plotit = TRUE)
@@ -108,28 +111,28 @@ wght.pred$xvar <- as.numeric(as.character(wght.pred$xvar))
 
 #plot the data
 p <- ggplot()
-p <- p + xlab("Number of visits") + ylab("Fruit weight (g)")
-p <- p + theme(text = element_text(size=18))
+p <- p + xlab("Number of visits") + ylab("Blueberry fruit weight (g)")
 p <- p + geom_ribbon(data=wght.pred,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=Visitor1), alpha = 0.5)
 p <- p + geom_line(data=wght.pred, aes(xvar,yvar, colour=Visitor1), size=1)
 p <- p + scale_x_continuous(breaks=seq(2,15,2))
 p <- p + scale_y_continuous(breaks=seq(0.4,2.6,0.4))
-p <- p + geom_jitter(data = berry_updated4,aes(x = sumvisits, y = Fresh.wgt, colour=Visitor1), size=1.5, shape = 21, width=0, height =0.08)
+p <- p + geom_jitter(data = berry_updated4,aes(x = sumvisits, y = Fresh.wgt, colour=Visitor1), 
+                     size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                    axis.line.y = element_blank(),
                    panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
                    panel.grid.minor = element_blank(),
                    panel.background = element_blank()) +
-  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.x=element_text(size=16, vjust = 1),
-        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.y=element_text(size=16, vjust = 1),
+  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.x=element_text(size=20, vjust = 1),
+        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.y=element_text(size=20, vjust = 1),
         axis.text=element_text(colour = "black"))+
   theme(axis.ticks.length = unit(2, "mm"),
         axis.ticks = element_line(colour = 'black', size = 0.4))+
   theme(strip.background = element_rect(colour="NA", fill=NA),
-        strip.text = element_text(size=12))
+        strip.text = element_text(size=16))
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
 p <- p + scale_fill_brewer(palette="Set2")
@@ -172,23 +175,22 @@ berry_updated3 <- berry_updated3[berry_updated3$SPEC.COM %in% keep,]
 
 #plot the data
 p <- ggplot()
-p <- p + xlab("Number of visits") + ylab("Fruit weight (g)")
-p <- p + theme(text = element_text(size=18))
+p <- p + xlab("Number of visits") + ylab("Blueberry fruit weight (g)")
 p <- p + geom_ribbon(data=comp.wght.pred,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=SPEC.COM), alpha = 0.5)
 p <- p + geom_line(data=comp.wght.pred, aes(xvar,yvar, colour=SPEC.COM), size=1)
 p <- p + scale_x_continuous(breaks=seq(1,15,2))
 p <- p + scale_y_continuous(breaks=seq(0.22,2.6,0.4))
-p <- p + geom_jitter(data = berry_updated3, aes(x = sumvisits, y = Fresh.wgt, colour=SPEC.COM), size=1.5, shape = 21, width=0, height =0.08)
+p <- p + geom_jitter(data = berry_updated3, aes(x = sumvisits, y = Fresh.wgt, colour=SPEC.COM), size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
                panel.grid.minor = element_blank(),
                panel.background = element_blank()) +
-  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.x=element_text(size=16, vjust = 1),
-        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =10),
-        axis.title.y=element_text(size=16, vjust = 1),
+  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.x=element_text(size=20, vjust = 1),
+        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.y=element_text(size=20, vjust = 1),
         axis.text=element_text(colour = "black"))+
   theme(axis.ticks.length = unit(2, "mm"),
         axis.ticks = element_line(colour = 'black', size = 0.4))+
