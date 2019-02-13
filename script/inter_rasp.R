@@ -1,33 +1,33 @@
-##RASP
-
+#load packages
+library(stringr)
 library(plyr)
 library(dplyr)
-library(DHARMa)
 library(glmmTMB)
+library(lme4)
 library(ggplot2)
-
-#left function
-left = function (string,char){
-  substr(string,1,char)
-}
+library(MuMIn)
+library(DHARMa)
+library(emmeans)
+library(sjPlot)
 
 #load data
 rasp <- read.csv("data/raspberry.csv", header=T)
 
-rasp$MONTH
 #remove zeros
-rasp=rasp[!rasp$Weight==0,]
-rasp=rasp[,-which(names(rasp) %in% c("Comments","COMMENTS","POLLEN_DONOR"))]
+rasp <- rasp[!rasp$Weight==0,]
+rasp <- rasp[,-which(names(rasp) %in% c("Comments","COMMENTS","POLLEN_DONOR"))]
 
 #subset dataframe to just visitation treatment
 #convert all visitor columns to character
-
 rasp_updated <- rasp[!rasp$POLLINATORS%in%"BC",]
 rasp_updated <- rasp_updated[!rasp_updated$POLLINATORS%in%"OC",]%>%droplevels()
-
 rasp_updated <- rasp_updated %>% mutate_at(vars(16:44), as.character) %>% droplevels()
 
 #retain only first letter of the string for visitors IDs
+#left function
+left = function (string,char){
+  substr(string,1,char)
+}
 rasp_updated2 <- rasp_updated %>% mutate_at(vars(16:44), function (x) left(x,char=1))
 
 #sum the number of visits from each taxa
@@ -41,20 +41,31 @@ rasp_updated2$sumvisits <- rowSums(rasp_updated2[, c(47:48)])
 rasp_updated2$p_stingless_bee <- rasp_updated2$stingless_bee/rasp_updated2$sumvisits
 rasp_updated2$p_honey_bee <- rasp_updated2$honey_bee/rasp_updated2$sumvisits
 
+#remove sum visits greatrer than 20
 rasp_updated2 <- rasp_updated2[!rasp_updated2$sumvisits >20,]%>%droplevels()
+
+#remove sb or hb visits only greater than 10
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"SB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"HB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
+
+#create unique ID fo row and plant to use as random effect
 rasp_updated2$RP <- paste0(rasp_updated2$ROW, rasp_updated2$PLANT)
 
 ##Subset to 2 or more visits and only mixed visits
 rasp_updated3=rasp_updated2[rasp_updated2$POLLINATORS%in%"Mixed"
                               & rasp_updated2$sumvisits >1,]%>%droplevels()
+
+#remove mixed visits greater than 15 for priority effects model
 rasp_updated3 <- rasp_updated3[!rasp_updated3$sumvisits >15,]%>%droplevels()
 
 #count number of reps per number of visits for each taxa group
 table(rasp_updated3$VISIT1, rasp_updated3$sumvisits)
 
-#run priority effect model
+#####################################
+#priority effects----
+#####################################
+
+#run full priority effect model
 rasp_m1.d <- glmmTMB(Weight~VISIT1*sumvisits*p_honey_bee+(1|BLOCK),
                    family="gaussian",
                    data = rasp_updated3)
@@ -64,7 +75,7 @@ summary(rasp_m1.d)
 dredge.rasp_m1 <- dredge(rasp_m1.d) # model excluding ratio is the best
 write.csv(dredge.rasp_m1, "/Users/macuser/Library/Mobile Documents/com~apple~CloudDocs/H_drive_DT/berrymixer/dredge.raspberryfruit.weight.csv")
 
-#run priority effect model
+#run priority effect model for reporting
 rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
               family="gaussian",
               data = rasp_updated3)
@@ -74,6 +85,7 @@ emtrends(rasp_m1, pairwise~VISIT1,var="sumvisits")
 #contrast   estimate         SE  df t.ratio p.value
 #H - S    0.01052346 0.05573458 114   0.189  0.8506
 
+#check residuals
 rasp_m1res=simulateResiduals(rasp_m1)
 plot(rasp_m1res)
 
@@ -112,6 +124,10 @@ p <- p + scale_fill_brewer(palette="Set2")
 p <- p + scale_colour_brewer(palette="Set2")
 p
 
+#######################################
+#species composition----
+#######################################
+
 #look at number of reps per number of visits
 table(rasp_updated2$POLLINATORS, rasp_updated2$sumvisits)
 
@@ -121,9 +137,12 @@ rasp_m2 <- glmmTMB(Weight~sumvisits*POLLINATORS+(1|BLOCK/RP),
             data = rasp_updated2)
 
 summary(rasp_m2)
+
+#test that slopes for each taxa are different from 0
 rasp.emm <- emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")#no differences between taxa
 test(rasp.emm, null = 0, side = ">")
 
+#check residuals
 rasp_m2res=simulateResiduals(rasp_m2)
 plot(rasp_m2res)
 
