@@ -34,8 +34,14 @@ rasp_single_updated2$sumvisits <- rowSums(rasp_single_updated2[, c(47:48)])
 rasp_single_updated2$p_P <- rasp_single_updated2$P/rasp_single_updated2$sumvisits
 rasp_single_updated2$p_N <- rasp_single_updated2$N/rasp_single_updated2$sumvisits
 
-##Weight model
-intra_rasp_m1 <- glmmTMB(Weight~POLLINATORS+VISIT1+sumvisits+(1|BLOCK),
-              family="gaussian",
-              data = rasp_single_updated2)
+#drop either honeybees or stingless bees
+rasp_single_HB <- rasp_single_updated2[!rasp_single_updated2$POLLINATORS%in%"SB",]%>%droplevels()
+rasp_single_SB <- rasp_single_updated2[!rasp_single_updated2$POLLINATORS%in%"HB",]%>%droplevels()
 
+
+##Weight model
+intra_rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
+              family="gaussian",
+              data = rasp_single_HB)
+
+summary(intra_rasp_m1)

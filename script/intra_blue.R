@@ -53,10 +53,30 @@ summary(m1)
 m2 <- glm(FS~SPEC.COM+Visitor1+sumvisits,
               family="binomial",
               data = berry_single_updated2)
-par(mfrow=(c(2,2)))
 summary(m2)
+m2res=simulateResiduals(m2)
+plot(m2res)
+
 
 m2 <- glmmTMB(Fresh.wgt~SPEC.COM*Visitor1+sumvisits+(1|Year),
               family="gaussian",
               data = berry_single_updated3)
 summary(m2)
+
+
+
+
+m1 <- glmmTMB(Fresh.wgt~Visitor1*TVN+(1|Year),
+              family="gaussian",
+              data = berry_single_updated3)
+summary(m1)
+
+
+
+
+
+
+
+
+
+
