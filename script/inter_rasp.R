@@ -1,5 +1,6 @@
 #load packages
 library(stringr)
+library(stringi)
 library(plyr)
 library(dplyr)
 library(glmmTMB)
@@ -28,7 +29,15 @@ rasp_updated <- rasp_updated %>% mutate_at(vars(16:44), as.character) %>% drople
 left = function (string,char){
   substr(string,1,char)
 }
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
 rasp_updated2 <- rasp_updated %>% mutate_at(vars(16:44), function (x) left(x,char=1))
+rasp_updated_time <- rasp_updated %>% mutate_at(vars(16:44), function (x) stri_sub(x,3))
+rasp_updated_time$duration<-rowSums(apply(rasp_updated_time[,16:44],
+                                          MARGIN=2,FUN = unlist(as.numeric)),na.rm=TRUE)
+rasp_updated_time$V1duration<-as.numeric(rasp_updated_time$VISIT1)
 
 #sum the number of visits from each taxa
 rasp_updated2$stingless_bee <- rowSums(rasp_updated2[, c(16:44)] == "S")
@@ -41,12 +50,19 @@ rasp_updated2$sumvisits <- rowSums(rasp_updated2[, c(47:48)])
 rasp_updated2$p_stingless_bee <- rasp_updated2$stingless_bee/rasp_updated2$sumvisits
 rasp_updated2$p_honey_bee <- rasp_updated2$honey_bee/rasp_updated2$sumvisits
 
+#add duration variables (duration code)
+rasp_updated2$duration=rasp_updated_time$duration
+rasp_updated2$V1D=rasp_updated_time$V1duration
+
 #remove sum visits greatrer than 20
 rasp_updated2 <- rasp_updated2[!rasp_updated2$sumvisits >20,]%>%droplevels()
 
 #remove sb or hb visits only greater than 10
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"SB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"HB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
+
+
+
 
 #create unique ID fo row and plant to use as random effect
 rasp_updated2$RP <- paste0(rasp_updated2$ROW, rasp_updated2$PLANT)

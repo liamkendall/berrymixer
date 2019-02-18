@@ -33,6 +33,11 @@ berry_updated2$p_stingless_bee <- berry_updated2$stingless_bee/berry_updated2$su
 berry_updated2$p_honey_bee <- berry_updated2$honey_bee/berry_updated2$sumvisits
 berry_updated2$p_bumble_bee <- berry_updated2$bumble_bee/berry_updated2$sumvisits
 berry_updated2$RP=paste0(berry_updated2$Row,berry_updated2$Plant.number)
+
+#add duration variables (duration code)
+berry_updated2$duration=berry_updated_time$duration
+berry_updated2$V1D=berry_updated_time$V1duration
+
 berry_updated2 <- berry_updated2[!(berry_updated2$SPEC.COM%in%"HB" & berry_updated2$sumvisits ==15),]%>%droplevels()
 
 #remove Tasmania BB data and RE data 
