@@ -38,7 +38,14 @@ berry_updated2$RP=paste0(berry_updated2$Row,berry_updated2$Plant.number)
 berry_updated2$duration=berry_updated_time$duration
 berry_updated2$V1D=berry_updated_time$V1duration
 
+berry_updated2[is.na(berry_updated2$V1D)==TRUE,]
+
+
 berry_updated2 <- berry_updated2[!(berry_updated2$SPEC.COM%in%"HB" & berry_updated2$sumvisits ==15),]%>%droplevels()
+
+#remove duplicated records
+berry_updated2[duplicated(berry_updated2$Tag),]
+berry_updated2 <- berry_updated2[!duplicated(berry_updated2$Tag),]
 
 #remove Tasmania BB data and RE data 
 #due to very low fresh weight sample size (10 Mixed visits)
@@ -102,6 +109,7 @@ test(slopes.m3)
 
 #extract estimates etc
 wght.pred <- emmip(m3, Visitor1 ~ sumvisits, mult.name = "Visitor1", cov.reduce = FALSE, CIs = T, plotit = TRUE)
+<-predict(dur_avg)
 wght.pred <- wght.pred$data
 wght.pred$yvar <- exp(wght.pred$yvar)
 wght.pred$UCL <- exp(wght.pred$UCL)
