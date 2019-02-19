@@ -10,6 +10,7 @@ library(MuMIn)
 library(DHARMa)
 library(emmeans)
 library(sjPlot)
+library(scales)
 
 #load data
 rasp <- read.csv("data/raspberry.csv", header=T)
@@ -77,36 +78,37 @@ rasp_updated3 <- rasp_updated3[!rasp_updated3$sumvisits >15,]%>%droplevels()
 #count number of reps per number of visits for each taxa group
 table(rasp_updated3$VISIT1, rasp_updated3$sumvisits)
 
+#Scaled Visitor 1 duration
+rasp_updated3$scale_v1=scale(rasp_updated3$V1D)
+
 #####################################
 #priority effects----
 #####################################
 
 #run full priority effect model
-rasp_m1.d <- glmmTMB(Weight~VISIT1*sumvisits*p_honey_bee+(1|BLOCK),
+rasp_m1.d <- glmmTMB(Weight~(scale_v1*VISIT1)+
+                       (sumvisits*VISIT1)+(1|BLOCK),
                    family="gaussian",
                    data = rasp_updated3)
 summary(rasp_m1.d)
-        
+
 #dredge it and print csv
 dredge.rasp_m1 <- dredge(rasp_m1.d) # model excluding ratio is the best
 write.csv(dredge.rasp_m1, "/Users/macuser/Library/Mobile Documents/com~apple~CloudDocs/H_drive_DT/berrymixer/dredge.raspberryfruit.weight.csv")
 
-#run priority effect model for reporting
-rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
-              family="gaussian",
-              data = rasp_updated3)
+#get models from dredge
+dredge.rasp_mods <- get.models(dredge.rasp_m1,subset=TRUE)
 
-summary(rasp_m1)
-emtrends(rasp_m1, pairwise~VISIT1,var="sumvisits")
-#contrast   estimate         SE  df t.ratio p.value
-#H - S    0.01052346 0.05573458 114   0.189  0.8506
+#run priority effect model for reporting # top model
+summary(dredge.rasp_mods[[1]])
+
 
 #check residuals
-rasp_m1res=simulateResiduals(rasp_m1)
+rasp_m1res=simulateResiduals(dredge.rasp_mods[[1]])
 plot(rasp_m1res)
 
 #extract estimates etc
-ras.wght.pred <- emmip(rasp_m1, VISIT1 ~ sumvisits, mult.name = "VISIT1", cov.reduce = FALSE, CIs = T, plotit = TRUE)
+ras.wght.pred <- emmip(dredge.rasp_mods[[1]], ~sumvisits, cov.reduce = FALSE, CIs = T, plotit = TRUE)
 ras.wght.pred <- ras.wght.pred$data
 ras.wght.pred$xvar <- as.numeric(as.character(ras.wght.pred$xvar))
 
@@ -114,12 +116,12 @@ ras.wght.pred$xvar <- as.numeric(as.character(ras.wght.pred$xvar))
 p <- ggplot()
 p <- p + xlab("Number of visits") + ylab("Raspberry fruit weight (g)")
 p <- p + geom_ribbon(data=ras.wght.pred,
-                     aes(ymin=LCL, ymax=UCL, x=xvar, fill=VISIT1), alpha = 0.5)
-p <- p + geom_line(data=ras.wght.pred, aes(xvar,yvar, colour=VISIT1), size=1)
+                     aes(ymin=LCL, ymax=UCL, x=xvar), alpha = 0.5)
+p <- p + geom_line(data=ras.wght.pred, aes(xvar,yvar), size=1)
 p <- p + scale_x_continuous(breaks=seq(2,15,2))
 p <- p + scale_y_continuous(breaks=seq(0,6,1))
-p <- p + geom_jitter(data = rasp_updated3,aes(x = sumvisits, y = Weight, colour=VISIT1), 
-                     size=2.5, shape = 21, width=0, height =0.04)
+p <- p + geom_jitter(data = rasp_updated3,aes(x = sumvisits, y = Weight),
+                     size=rasp_updated3$V1D/5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
@@ -137,9 +139,9 @@ p <- p + theme(axis.line.x = element_blank(),
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
 p <- p + scale_fill_brewer(palette="Set2")
+p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
 p <- p + scale_colour_brewer(palette="Set2")
 p
-
 #######################################
 #species composition----
 #######################################
@@ -170,12 +172,13 @@ ras.comp.wght <- ras.comp.wght[!(ras.comp.wght$POLLINATORS%in%"SB" & ras.comp.wg
 ras.comp.wght <- ras.comp.wght[!(ras.comp.wght$POLLINATORS%in%"HB" & ras.comp.wght$sumvisits > 10),] %>% droplevels()
 
 #plot the data
+
 p <- ggplot()
 p <- p + xlab("Number of visits") + ylab("Raspberry fruit weight (g)")
 p <- p + geom_ribbon(data=ras.comp.wght,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=POLLINATORS), alpha = 0.5)
 p <- p + geom_line(data=ras.comp.wght, aes(xvar,yvar, colour=POLLINATORS), size=1)
-p <- p + scale_x_continuous(breaks=seq(2,20,2))
+#p <- p + scale_x_continuous(breaks=seq(2,20,2))
 p <- p + scale_y_continuous(breaks=seq(0,6,1))
 p <- p + geom_jitter(data = rasp_updated2, aes(x = sumvisits, y = Weight, colour=POLLINATORS), size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
@@ -195,8 +198,13 @@ p <- p + theme(axis.line.x = element_blank(),
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
 p <- p + scale_fill_brewer(palette="Set2")
-p <- p + scale_colour_brewer(palette="Set2")
+p <- p + scale_colour_brewer(palette="Set2") 
+p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
+p <- p + facet_wrap(~POLLINATORS, scales = "free_x")
 p
+#need to add integer x axis
+ggsave(p,file="graphs/raspberry_composition.pdf", height =5, width=12,dpi=300)
+
 
 ################################
 #jamie finished here (12/2/19)

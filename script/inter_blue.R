@@ -68,17 +68,19 @@ berry_updated4$log.wgt <- log(berry_updated4$Fresh.wgt)
 #too many 1's in the data to run the fruitset model
 m1 <- glmmTMB(FS~Visitor1*sumvisits+(1|Year),
                         family="binomial",
-                        data = berry_updated4)
+                        data = berry_updated3)
 summary(m1)
 plot_model(m1, type = "pred",terms = "Visitor1")
 plot_model(m1, type = "pred",terms = "sumvisits")
 
 #priority effects for fruit weight
-m2 <- glmmTMB(log.wgt~Visitor1*sumvisits*p_honey_bee+(1|Year),
+m2 <- glmmTMB(log.wgt~(scale(V1D)*Visitor1)+
+                (sumvisits*Visitor1)+
+                (1|Year),
               family=gaussian,
               data = berry_updated4)
 summary(m2)
-emtrends(m2, pairwise~Visitor1,var="p_honey_bee")
+emtrends(m2, pairwise~Visitor1,var="sumvisits")
 
 #check residuals
 m2res=simulateResiduals(m2)
@@ -89,27 +91,30 @@ testResiduals(m2res)#looks good
 d.m2 <- dredge(m2) # model excluding ratio is the best
 write.csv(d.m2, "/Users/macuser/Library/Mobile Documents/com~apple~CloudDocs/H_drive_DT/berrymixer/dredge.fruit.weight.csv")
 
+d.mods <-get.models(d.m2,subset=TRUE)
 #run best priority effects model as determined by dregde above 
-m3 <- glmmTMB(log.wgt~Visitor1*sumvisits+(1|Year),#log fruit weight gives lower AIC
-              family=gaussian,
-              data = berry_updated4)
-summary(m3)
+summary(d.mods[[1]])
 
 #check residuals
-m3res=simulateResiduals(m3)
+m3res=simulateResiduals(d.mods[[1]])
 plot(m3res)
 testResiduals(m3res)#looks good
 
 #compare slopes
-slopes.m3 <- emtrends(m3, pairwise~Visitor1,var="sumvisits")
+slopes.m3 <- emtrends(d.mods[[1]], pairwise~Visitor1,var="sumvisits")
 test(slopes.m3)
+
+#$emtrends
+#Visitor1 sumvisits.trend     SE df t.ratio p.value
+#H                 0.0507 0.0175 44  2.900  0.0058 
+#S                -0.0202 0.0257 44 -0.787  0.4355 
+
 #$contrasts
 #contrast  estimate       SE df t.ratio p.value
-#H - S    0.0783168 0.027268 78   2.872  0.0052
+#H - S      0.0709    0.0311 44 2.283   0.0273
 
 #extract estimates etc
-wght.pred <- emmip(m3, Visitor1 ~ sumvisits, mult.name = "Visitor1", cov.reduce = FALSE, CIs = T, plotit = TRUE)
-<-predict(dur_avg)
+wght.pred <- emmip(d.mods[[1]], Visitor1 ~ sumvisits, mult.name = "Visitor1", cov.reduce = FALSE, CIs = T, plotit = TRUE)
 wght.pred <- wght.pred$data
 wght.pred$yvar <- exp(wght.pred$yvar)
 wght.pred$UCL <- exp(wght.pred$UCL)
@@ -145,6 +150,7 @@ p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.
 p <- p + scale_fill_brewer(palette="Set2")
 p <- p + scale_colour_brewer(palette="Set2")
 p
+ggsave(p,file="graphs/blueberry_priority_effect.pdf", height =6, width=8,dpi=300)
 
 ################################
 #species composition----
@@ -152,7 +158,7 @@ p
 
 #log berry weight is better model
 berry_updated3$log.wgt <- log(berry_updated3$Fresh.wgt)
-m5 <- glmmTMB(log.wgt~SPEC.COM*sumvisits+(1|Block/RP)+(1|Year),
+m5 <- glmmTMB(log.wgt~SPEC.COM*sumvisits+(1|Block)+(1|Year),
             family="gaussian",
             data = berry_updated3)
 summary(m5)
@@ -179,15 +185,15 @@ comp.wght.pred <- comp.wght.pred[!(comp.wght.pred$SPEC.COM%in%"SB" & comp.wght.p
 comp.wght.pred <- comp.wght.pred[!(comp.wght.pred$SPEC.COM%in%"HB" & comp.wght.pred$sumvisits > 5),] %>% droplevels()
 keep <- c("HB", "MX", "SB")
 berry_updated3 <- berry_updated3[berry_updated3$SPEC.COM %in% keep,]
-
+berry_updated5 <- 
 #plot the data
+#might be worth plotting just 1-5 visits
 p <- ggplot()
 p <- p + xlab("Number of visits") + ylab("Blueberry fruit weight (g)")
 p <- p + geom_ribbon(data=comp.wght.pred,
-                     aes(ymin=LCL, ymax=UCL, x=xvar, fill=SPEC.COM), alpha = 0.5)
+                     aes(ymin=LCL, ymax=UCL, x=xvar, fill=SPEC.COM), alpha = 0.3)
 p <- p + geom_line(data=comp.wght.pred, aes(xvar,yvar, colour=SPEC.COM), size=1)
-p <- p + scale_x_continuous(breaks=seq(1,15,2))
-p <- p + scale_y_continuous(breaks=seq(0.22,2.6,0.4))
+#p <- p + scale_x_continuous(limits=c(1,7))
 p <- p + geom_jitter(data = berry_updated3, aes(x = sumvisits, y = Fresh.wgt, colour=SPEC.COM), size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
@@ -207,7 +213,11 @@ p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
 p <- p + scale_fill_brewer(palette="Set2")
 p <- p + scale_colour_brewer(palette="Set2")
+p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
+p <- p + facet_wrap(~SPEC.COM,scales = "free_x")
 p
+table(berry_updated3$sumvisits,berry_updated3$SPEC.COM)
+ggsave(p,file="graphs/blueberry_composition.pdf", height =5, width=12,dpi=300)
 
 ################################
 #jamie finished here (11/2/19)

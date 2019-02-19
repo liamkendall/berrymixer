@@ -21,10 +21,6 @@ berry_updated <- berry[berry$TREATMENT%in%"V",] %>% mutate_at(vars(19:33), as.ch
 berry_updated_time <- berry_updated %>% mutate_at(vars(19:33), function (x) word(x,3))
 
 #sum the number of visits from each taxa
-str(berry_updated_time)
-
-as.numeric(unlist(berry_updated_time[, c(19:33)]))
-
 berry_updated_time$duration<-rowSums(apply(berry_updated_time[,19:33],
                          MARGIN=2,FUN = unlist(as.numeric)),na.rm=TRUE)
 berry_updated_time$V1duration<-as.numeric(berry_updated_time$Visitor1)

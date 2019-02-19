@@ -2,12 +2,13 @@
 library(glmmTMB)
 
 #priority effects for fruit weight
-dur1 <- glmmTMB(log.wgt~(scale(V1D)*Visitor1)+(sumvisits*Visitor1)+
+dur1 <- lmer(log.wgt~(scale(V1D)*Visitor1)+(sumvisits*Visitor1)+
                   (1|Year),
-              family=gaussian,
               data = berry_updated4)
-sum(is.na(berry_updated4$V1D))
+
 summary(dur1)
+
+
 dur1 <- glmmTMB(log.wgt~scale(V1D)*sumvisits+
                   (1|Year),
                 family=gaussian,
@@ -32,9 +33,11 @@ t.test(V1D~Visitor1,berry_updated4)
 
 t.test(V1D~VISIT1,rasp_updated2)
 
-model.avg(DUR_DREDGE,cumsum(weight) <= .95)
+dur_avg=model.avg(DUR_DREDGE,cumsum(weight) <= .95,fit=TRUE)
 
-boxplot()
+
+predict(dur_avg,newdata = NULL,se.fit = TRUE)
+confint(dur_avg)
 
 confset.95p <- get.models(DUR_DREDGE, cumsum(weight) <= .95)
 model.avg(confset.95p)
