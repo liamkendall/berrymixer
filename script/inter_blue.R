@@ -185,7 +185,7 @@ comp.wght.pred <- comp.wght.pred[!(comp.wght.pred$SPEC.COM%in%"SB" & comp.wght.p
 comp.wght.pred <- comp.wght.pred[!(comp.wght.pred$SPEC.COM%in%"HB" & comp.wght.pred$sumvisits > 5),] %>% droplevels()
 keep <- c("HB", "MX", "SB")
 berry_updated3 <- berry_updated3[berry_updated3$SPEC.COM %in% keep,]
-berry_updated5 <- 
+berry_updated5  <- berry_updated3[!(berry_updated3$SPEC.COM%in%"HB" & berry_updated3$sumvisits>5),]
 #plot the data
 #might be worth plotting just 1-5 visits
 p <- ggplot()
@@ -194,7 +194,7 @@ p <- p + geom_ribbon(data=comp.wght.pred,
                      aes(ymin=LCL, ymax=UCL, x=xvar, fill=SPEC.COM), alpha = 0.3)
 p <- p + geom_line(data=comp.wght.pred, aes(xvar,yvar, colour=SPEC.COM), size=1)
 #p <- p + scale_x_continuous(limits=c(1,7))
-p <- p + geom_jitter(data = berry_updated3, aes(x = sumvisits, y = Fresh.wgt, colour=SPEC.COM), size=2.5, shape = 21, width=0, height =0.04)
+p <- p + geom_jitter(data = berry_updated5, aes(x = sumvisits, y = Fresh.wgt, colour=SPEC.COM), size=2.5, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
@@ -216,7 +216,6 @@ p <- p + scale_colour_brewer(palette="Set2")
 p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
 p <- p + facet_wrap(~SPEC.COM,scales = "free_x")
 p
-table(berry_updated3$sumvisits,berry_updated3$SPEC.COM)
 ggsave(p,file="graphs/blueberry_composition.pdf", height =5, width=12,dpi=300)
 
 ################################
