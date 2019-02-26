@@ -63,8 +63,6 @@ rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"SB" & rasp_update
 rasp_updated2 <- rasp_updated2[!(rasp_updated2$POLLINATORS%in%"HB" & rasp_updated2$sumvisits > 10),] %>% droplevels()
 
 
-
-
 #create unique ID fo row and plant to use as random effect
 rasp_updated2$RP <- paste0(rasp_updated2$ROW, rasp_updated2$PLANT)
 
@@ -102,26 +100,29 @@ dredge.rasp_mods <- get.models(dredge.rasp_m1,subset=TRUE)
 #run priority effect model for reporting # top model
 summary(dredge.rasp_mods[[1]])
 
-
 #check residuals
 rasp_m1res=simulateResiduals(dredge.rasp_mods[[1]])
 plot(rasp_m1res)
 
+#First visit duration
+#plot the data
 #extract estimates etc
-ras.wght.pred <- emmip(dredge.rasp_mods[[1]], ~sumvisits, cov.reduce = FALSE, CIs = T, plotit = TRUE)
+ras.wght.pred <- emmip(dredge.rasp_mods[[1]], ~scale_v1, cov.reduce = FALSE, CIs = T, plotit = TRUE)
+
 ras.wght.pred <- ras.wght.pred$data
+
 ras.wght.pred$xvar <- as.numeric(as.character(ras.wght.pred$xvar))
 
-#plot the data
+
 p <- ggplot()
-p <- p + xlab("Number of visits") + ylab("Raspberry fruit weight (g)")
+p <- p + xlab("First visit duration") + ylab("Raspberry fruit weight (g)")
 p <- p + geom_ribbon(data=ras.wght.pred,
                      aes(ymin=LCL, ymax=UCL, x=xvar), alpha = 0.5)
 p <- p + geom_line(data=ras.wght.pred, aes(xvar,yvar), size=1)
-p <- p + scale_x_continuous(breaks=seq(2,15,2))
-p <- p + scale_y_continuous(breaks=seq(0,6,1))
-p <- p + geom_jitter(data = rasp_updated3,aes(x = sumvisits, y = Weight),
-                     size=rasp_updated3$V1D/5, shape = 21, width=0, height =0.04)
+#p <- p + scale_x_continuous(breaks=seq(2,15,2))
+#p <- p + scale_y_continuous(breaks=seq(0,6,1))
+p <- p + geom_jitter(data = rasp_updated3,aes(x = scale_v1, y = Weight),
+                     size=2, shape = 21, width=0, height =0.04)
 p <- p + theme(axis.line.x = element_blank(),
                axis.line.y = element_blank(),
                panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
@@ -138,10 +139,62 @@ p <- p + theme(axis.line.x = element_blank(),
         strip.text = element_text(size=12))
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
-p <- p + scale_fill_brewer(palette="Set2")
+p <- p + scale_fill_brewer(palette="Set1")
 p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
-p <- p + scale_colour_brewer(palette="Set2")
+p <- p + scale_colour_brewer(palette="Set1")
 p
+
+
+#No. of visits
+#plot the data
+#extract estimates etc
+ras.wght.pred2 <- emmip(dredge.rasp_mods[[1]], ~sumvisits, cov.reduce = FALSE, CIs = T, plotit = TRUE)
+
+ras.wght.pred2 <- ras.wght.pred2$data
+
+ras.wght.pred2$xvar <- as.numeric(as.character(ras.wght.pred2$xvar))
+
+p <- ggplot()
+p <- p + xlab("No. of visits") + ylab("Raspberry fruit weight (g)")
+p <- p + geom_ribbon(data=ras.wght.pred2,
+                     aes(ymin=LCL, ymax=UCL, x=xvar), alpha = 0.5)
+p <- p + geom_line(data=ras.wght.pred2, aes(xvar,yvar), size=1)
+#p <- p + scale_x_continuous(breaks=seq(2,15,2))
+p <- p + scale_y_continuous(breaks=seq(0,6,1))
+p <- p + geom_jitter(data = rasp_updated3,aes(x = sumvisits, y = Weight),
+                     size=2, shape = 21, width=0, height =0.04)
+p <- p + theme(axis.line.x = element_blank(),
+               axis.line.y = element_blank(),
+               panel.grid.major = element_line(size=.4, colour = "#d3d3d3"),
+               panel.grid.minor = element_blank(),
+               panel.background = element_blank()) +
+  theme(axis.text.x=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.x=element_text(size=20, vjust = 1),
+        axis.text.y=element_text(angle= 360, hjust = 0.5, vjust = 0.5, size =14),
+        axis.title.y=element_text(size=20, vjust = 1),
+        axis.text=element_text(colour = "black"))+
+  theme(axis.ticks.length = unit(2, "mm"),
+        axis.ticks = element_line(colour = 'black', size = 0.4))+
+  theme(strip.background = element_rect(colour="NA", fill=NA),
+        strip.text = element_text(size=12))
+p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
+p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
+p <- p + scale_fill_brewer(palette="Set1")
+p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
+p <- p + scale_colour_brewer(palette="Set1")
+p
+
+
+
+
+
+
+#Species identity model for comparison
+rasp.modID <- glmmTMB(Weight~(sumvisits*VISIT1)+(1|BLOCK),
+                      family="gaussian",
+                      data = rasp_updated3)
+summary(rasp.modID)
+
 #######################################
 #species composition----
 #######################################
@@ -158,7 +211,7 @@ summary(rasp_m2)
 
 #test that slopes for each taxa are different from 0
 rasp.emm <- emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")#no differences between taxa
-test(rasp.emm, null = 0, side = ">")
+test(rasp.emm, null = 0)
 
 #check residuals
 rasp_m2res=simulateResiduals(rasp_m2)
@@ -197,12 +250,12 @@ p <- p + theme(axis.line.x = element_blank(),
         strip.text = element_text(size=12))
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
-p <- p + scale_fill_brewer(palette="Set2")
-p <- p + scale_colour_brewer(palette="Set2") 
+p <- p + scale_fill_brewer(palette="Set1")
+p <- p + scale_colour_brewer(palette="Set1") 
 p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
 p <- p + facet_wrap(~POLLINATORS, scales = "free_x")
 p
-#need to add integer x axis
+#
 ggsave(p,file="graphs/raspberry_composition.pdf", height =5, width=12,dpi=300)
 
 

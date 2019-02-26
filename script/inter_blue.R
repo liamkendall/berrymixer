@@ -47,6 +47,7 @@ berry_updated2 <- berry_updated2[!(berry_updated2$SPEC.COM%in%"HB" & berry_updat
 berry_updated2[duplicated(berry_updated2$Tag),]
 berry_updated2 <- berry_updated2[!duplicated(berry_updated2$Tag),]
 
+cor(berry_updated4$duration,berry_updated4$sumvisits)
 #remove Tasmania BB data and RE data 
 #due to very low fresh weight sample size (10 Mixed visits)
 table(berry_updated2[berry_updated2$Species%in%"RE" &
@@ -74,6 +75,9 @@ plot_model(m1, type = "pred",terms = "Visitor1")
 plot_model(m1, type = "pred",terms = "sumvisits")
 
 #priority effects for fruit weight
+#V1D = visitor one duration
+#Visitor1 = Visitor identity
+#sumvisits = number of total visits
 m2 <- glmmTMB(log.wgt~(scale(V1D)*Visitor1)+
                 (sumvisits*Visitor1)+
                 (1|Year),
@@ -99,6 +103,25 @@ summary(d.mods[[1]])
 m3res=simulateResiduals(d.mods[[1]])
 plot(m3res)
 testResiduals(m3res)#looks good
+
+#calculate percent difference at two visits
+
+#stingless bee initial with two visits
+sb_2=exp(d.mods[[1]]$fit$par[1]+d.mods[[1]]$fit$par[2]*2+
+  d.mods[[1]]$fit$par[3]+d.mods[[1]]$fit$par[4]*2)
+
+hb_2=exp(d.mods[[1]]$fit$par[1]+d.mods[[1]]$fit$par[2]*2)
+
+((sb_2-hb_2)/hb_2)*100
+#78.93556%
+
+sb_15=exp(d.mods[[1]]$fit$par[1]+d.mods[[1]]$fit$par[2]*15+
+           d.mods[[1]]$fit$par[3]+d.mods[[1]]$fit$par[4]*15)
+
+hb_15=exp(d.mods[[1]]$fit$par[1]+d.mods[[1]]$fit$par[2]*15)
+
+((sb_15-hb_15)/hb_15)*100
+#-28%
 
 #compare slopes
 slopes.m3 <- emtrends(d.mods[[1]], pairwise~Visitor1,var="sumvisits")
@@ -147,8 +170,8 @@ p <- p + theme(axis.line.x = element_blank(),
         strip.text = element_text(size=16))
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
-p <- p + scale_fill_brewer(palette="Set2")
-p <- p + scale_colour_brewer(palette="Set2")
+p <- p + scale_fill_brewer(palette="Set1")
+p <- p + scale_colour_brewer(palette="Set1")
 p
 ggsave(p,file="graphs/blueberry_priority_effect.pdf", height =6, width=8,dpi=300)
 
@@ -165,6 +188,7 @@ summary(m5)
 emtrends(m5, pairwise~SPEC.COM,var="sumvisits")#no differences between taxa
 bb.emm <- emtrends(m5, pairwise~SPEC.COM,var="sumvisits")#no differences between taxa
 test(bb.emm, null = 0, side = ">")
+test(bb.emm, null = 0,adjust="fdr")
 
 #check residuals
 m5res=simulateResiduals(m5)
@@ -211,8 +235,8 @@ p <- p + theme(axis.line.x = element_blank(),
         strip.text = element_text(size=12))
 p <- p + theme(axis.title.y=element_text(margin=margin(0,20,0,0)))
 p <- p + theme(panel.border = element_rect(color = "black", fill = NA, size = 0.4))
-p <- p + scale_fill_brewer(palette="Set2")
-p <- p + scale_colour_brewer(palette="Set2")
+p <- p + scale_fill_brewer(palette="Set1")
+p <- p + scale_colour_brewer(palette="Set1")
 p <- p + scale_x_continuous(breaks = function(x) unique(floor(pretty(seq(0, (max(x) + 1) * 1.1)))))
 p <- p + facet_wrap(~SPEC.COM,scales = "free_x")
 p
