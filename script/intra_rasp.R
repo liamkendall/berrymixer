@@ -40,7 +40,7 @@ rasp_single_SB <- rasp_single_updated2[!rasp_single_updated2$POLLINATORS%in%"HB"
 
 
 ##Weight model
-intra_rasp_m1 <- glmmTMB(Weight~VISIT1*sumvisits+(1|BLOCK),
+intra_rasp_m1 <- glmmTMB(Weight~TOTAL.TIME*sumvisits+(1|BLOCK),
               family="gaussian",
               data = rasp_single_HB)
 
