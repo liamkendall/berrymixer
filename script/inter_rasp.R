@@ -210,7 +210,7 @@ rasp_m2 <- glmmTMB(Weight~sumvisits*POLLINATORS+(1|BLOCK/RP),
 summary(rasp_m2)
 
 #test that slopes for each taxa are different from 0
-rasp.emm <- emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")#no differences between taxa
+rasp.emm <- emtrends(rasp_m2, pairwise~POLLINATORS,var="sumvisits")
 test(rasp.emm, null = 0)
 
 #check residuals
