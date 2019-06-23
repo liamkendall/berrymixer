@@ -11,7 +11,7 @@ library(emmeans)
 library(sjPlot)
 
 #load data
-berry <- read.csv("data/BLUEBERRY_MIXED_V3.csv", header=T)
+berry <- read.csv("data/BLUEBERRY_MIXED_V5.csv", header=T)
 
 #subset dataframe to just visitation treatment
 #convert all visitor columns to character
