@@ -67,6 +67,8 @@ berry_updated4$log.wgt <- log(berry_updated4$Fresh.wgt)
 berry_updated4[berry_updated4$Tag%in%"Juan-11",c("V1D")]=58
 berry_updated4$V1D <- as.numeric(berry_updated4$V1D)
 berry_updated4$scale_v1 <- scale(berry_updated4$V1D)
+berry_updated4$scale_d <- scale(berry_updated4$duration)
+berry_updated4$scale_sd <- scale(berry_updated4$duration-berry_updated4$V1D)
 
 #################################
 #priority effects----
@@ -109,15 +111,26 @@ blue.both.mod <- glmmTMB(log.wgt~scale_v1*sumvisits*Visitor1+
                        family=gaussian,
                        data = berry_updated4)
 
-blue.cum.dur.mod <- glmmTMB(log.wgt~scale_v1*duration*Visitor1+
+#full duration model
+blue.cm.dr.mod <- glmmTMB(log.wgt~scale_v1*scale_d*Visitor1+
                            (1|Year),
                          family=gaussian,
                          data = berry_updated4)
 
-dredge(blue.cum.dur.mod)
+#full duration model
+blue.cm.dr.mod <- glmmTMB(log.wgt~scale_v1*scale_d*Visitor1+
+                             (1|Year),
+                           family=gaussian,
+                           data = berry_updated4)
+
+#full duration but total duration = total - v1
+blue.sb.dr.mod <- glmmTMB(log.wgt~scale_v1*scale_sd*Visitor1+
+                            (1|Year),
+                          family=gaussian,
+                          data = berry_updated4)
+
 #AIC.BIC
-AIC(blue.sp.mod,blue.dr.mod)
-BIC(blue.sp.mod,blue.dr.mod)
+AICc(blue.sp.mod,blue.dr.mod,blue.cm.dr.mod,blue.sb.dr.mod)
 
 
 
@@ -132,11 +145,18 @@ blue.dr.mod.res=simulateResiduals(blue.dr.mod)
 plot(blue.dr.mod.res)
 testResiduals(blue.dr.mod.res)#looks good
 
+
+#visit full duration model
+blue.cm.dr.mod.res=simulateResiduals(blue.cm.dr.mod)
+plot(blue.cm.dr.mod.res)
+testResiduals(blue.cm.dr.mod.res)#looks good
+
 #dredge it and print csv
 blue.sp.d <- dredge(blue.sp.mod,rank="AICc") 
 blue.dr.d <- dredge(blue.dr.mod,rank="AICc") 
 blue.both.d <- dredge(blue.both.mod,rank="AICc") 
-blue.duration.d <- dredge(blue.cum.dur.mod,rank="AICc") 
+blue.cm.dr.d <- dredge(blue.cm.dr.mod,rank="AICc") 
+blue.sb.dr.d <- dredge(blue.sb.dr.mod,rank="AICc") 
 
 write.csv(blue.sp.d, "dredge_blue_species.csv")
 write.csv(blue.dr.d, "dredge_blue_duration.csv")
@@ -144,18 +164,22 @@ write.csv(blue.dr.d, "dredge_blue_duration.csv")
 b.sp.mods <-get.models(blue.sp.d,subset=TRUE)
 b.dr.mods <-get.models(blue.dr.d,subset=TRUE)
 b.both.mods <-get.models(blue.both.d,subset=TRUE)
+b.cm.dr.mods <-get.models(blue.cm.dr.d,subset=TRUE)
+b.sb.dr.mods <-get.models(blue.sb.dr.d,subset=TRUE)
 
 #summarise best priority effects model
 summary(b.sp.mods[[1]])
 summary(b.dr.mods[[1]])
 summary(b.both.mods[[1]])
+summary(b.cm.dr.mods[[1]])
+summary(b.sb.dr.mods[[1]])
 
 importance(b.sp.mods)
 importance(b.dr.mods)
 importance(b.both.mods)
+importance(b.cm.dr.mods)
 
-
-
+AICc(b.cm.dr.mods[[1]],b.sb.dr.mods[[1]]) #almost identical
 
 #check residuals of best duration or identity models
 
