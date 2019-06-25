@@ -132,7 +132,7 @@ rasp.int.s.mod.4 <- glmmTMB(Weight~POLLINATORS+scale_v1+
 
 
 #AIC.BIC
-AICc(rasp.int.s.mod,rasp.int.s.mod.2,rasp.int.s.mod.3,rasp.int.s.mod.4,rasp.int.s.mod.5)
+AICc(rasp.int.s.mod,rasp.int.s.mod.2,rasp.int.s.mod.3,rasp.int.s.mod.4)
 
 #log wgt model without interaction best fit
 
@@ -140,6 +140,7 @@ AICc(rasp.int.s.mod,rasp.int.s.mod.2,rasp.int.s.mod.3,rasp.int.s.mod.4,rasp.int.
 rasp.int.s.mod.2.res=simulateResiduals(rasp.int.s.mod.2)
 plot(rasp.int.s.mod.2.res)
 testResiduals(rasp.int.s.mod.2.res)#looks real bad
+#maybe use the raw values in the response (AIC higher but residuals better)
 
 #Run without block term
 
@@ -204,7 +205,7 @@ plot(rasp.intm.mod.res)
 testResiduals(rasp.intm.mod.res)#could be better
 
 #full duration model
-rasp.intm.mod.3.res=simulateResiduals(rasp.intm.mod.3)
+rasp.intm.mod.3.res=simulateResiduals(rasp.intm.mod.2)
 plot(rasp.intm.mod.3.res)
 testResiduals(rasp.intm.mod.3.res)#could be better
 

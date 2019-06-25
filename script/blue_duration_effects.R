@@ -71,7 +71,7 @@ berry.intra <- berry_updated3[!berry_updated3$SPEC.COM%in%c("MX"),]%>%droplevels
 berry.intra$log.wgt <- log(berry.intra$Fresh.wgt)
 
 #scale duration - first visit and full
-berry.intra$V1D <- as.integer(berry.intra$V1D)
+berry.intra$V1D <- as.integer(berry.intra$V1D)#doesnt work
 berry.intra$scale_v1 <- scale(berry.intra$V1D)
 berry.intra$scale_d <- scale(berry.intra$duration)
 
@@ -330,3 +330,4 @@ summary(lm(Fresh.wgt~SPEC.COM*scale_v1, data = berry.intra.1))
 summary(glm(FS~SPEC.COM*scale_v1,
             family="binomial",
             data = berry.intra.1))
+
