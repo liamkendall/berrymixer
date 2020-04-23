@@ -1,2 +1,2 @@
 # berrymixer
-Analyses of how floral visit order affects pollination success using blueberry and raspberry as model species
+Analyses of how the order of floral visitors affect pollination success in blueberry and raspberry
