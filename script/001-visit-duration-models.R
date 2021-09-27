@@ -79,7 +79,7 @@ blue.dur.number.plot <-
               aes(x = ord.v, y = v.d,
                   colour=poll.sp,
                   fill=poll.sp), 
-              size=3, shape = 21,
+              size=4, shape = 21,col="white",
               width=0.2, height = 0.05,
               show.legend = TRUE,alpha=0.15)+
   geom_ribbon(data=duration.pred$data,
@@ -124,9 +124,9 @@ blue.dur.number.plot <-
 blue.dur.number.plot
 
 
-ggsave(blue.dur.number.plot,file="graphs/Fig 1 - Visit duration.pdf",
+ggsave(blue.dur.number.plot,file="graphs/Fig 1.pdf",
        height = 4, width = 5, dpi = 300)
-ggsave(blue.dur.number.plot,file="graphs/Fig 1 - Visit duration.jpg",
+ggsave(blue.dur.number.plot,file="graphs/Fig 1.jpg",
        height = 4, width = 5, dpi = 300)
 
 
