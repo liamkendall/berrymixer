@@ -1,6 +1,5 @@
 .Rproj.user
 .Rhistory
 .RData
+.RDataTmp
 .Ruserdata
-old_data/
-old_script/
