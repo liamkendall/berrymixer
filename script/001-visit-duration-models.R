@@ -81,7 +81,7 @@ blue.dur.number.plot <-
                   fill=poll.sp), 
               size=4, shape = 21,col="white",
               width=0.2, height = 0.05,
-              show.legend = TRUE,alpha=0.15)+
+              show.legend = TRUE,alpha=0.3)+
   geom_ribbon(data=duration.pred$data,
               aes(ymin=(LCL),
                   ymax=(UCL),
