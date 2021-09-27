@@ -1,4 +1,4 @@
-###Models of floral visit duration in relation to number of preceding visits in blueberry and raspberry
+###Models of floral visit duration in relation to number of preceding visits in blueberry
 
 #libraries
 library(reshape2)
