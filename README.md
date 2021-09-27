@@ -1,8 +1,6 @@
 This is the code and data from the article:
 
-**Title** 
-
-"Initial flower visitor identity and foraging time strongly influences blueberry reproductive success"
+<h3>Initial flower visitor identity and foraging time strongly influences blueberry reproductive success</h3>
 
 **Authors** 
 
