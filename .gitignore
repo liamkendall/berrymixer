@@ -2,4 +2,10 @@
 .Rhistory
 .RData
 .RDataTmp
+<<<<<<< HEAD
 .Ruserdata
+=======
+.Ruserdata
+old_data/
+old_script/
+>>>>>>> 894ea3993b929d211780066d79184aa7af61d49b
