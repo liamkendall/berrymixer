@@ -92,9 +92,9 @@ berry.boxplot <- ggplot(berry.box,aes(x=SPEC.COM,
                                     size = 0.4))+
   scale_fill_manual(values=comp.cols)+
   scale_colour_manual(values=comp.cols)+
-  labs(fill="Pollinator taxa",
-       col="Pollinator taxa")+
-  xlab("Pollinator taxa")+
+  labs(fill="Pollinator taxon",
+       col="Pollinator taxon")+
+  xlab("Pollinator taxon")+
   ylab("Fruit weight (g)")
 berry.boxplot
 
@@ -200,9 +200,9 @@ bomp.plot <- ggplot(berry.comp.plot,aes(x=duration,
   scale_fill_manual(values=comp.cols)+
   scale_colour_manual(values=comp.cols)+
   scale_linetype_manual(values=c("solid","dashed","dashed"))+
-  labs(fill="Pollinator taxa",
-       col="Pollinator taxa",
-       linetype="Pollinator taxa")
+  labs(fill="Pollinator taxon",
+       col="Pollinator taxon",
+       linetype="Pollinator taxon")
 
 berry.comp.duration <- berry.boxplot+bomp.plot
 
@@ -210,14 +210,14 @@ ggsave(berry.comp.duration,
        file="graphs/Fig 2.pdf",
        height = 4,
        width = 6,
-       dpi = 300)
+       dpi = 600)
 
 ggsave(berry.comp.duration,
        file="graphs/Fig 2.jpg",
        device = "jpg",
        height = 4,
        width = 6,
-       dpi = 300)
+       dpi = 600)
 
 ################################ 
 ##number of visits
@@ -326,9 +326,9 @@ bomp.sv.plot <- ggplot(berry.comp.plot,aes(x=sumvisits,
   scale_fill_manual(values=comp.cols)+
   scale_colour_manual(values=comp.cols)+
   scale_linetype_manual(values=c("solid","dashed","dashed"))+
-  labs(fill="Pollinator taxa",
-       col="Pollinator taxa",
-       linetype="Pollinator taxa")
+  labs(fill="Pollinator taxon",
+       col="Pollinator taxon",
+       linetype="Pollinator taxon")
 bomp.sv.plot
 
 berry.comp.sv <- berry.boxplot+bomp.sv.plot
@@ -338,12 +338,12 @@ ggsave(berry.comp.sv,
        file="graphs/Fig S1.pdf",
        height = 4,
        width = 6,
-       dpi = 300)
+       dpi = 600)
 
 ggsave(berry.comp.sv,
        file="graphs/Fig S1.jpg",
        device = "jpg",
        height =4,
        width = 6,
-       dpi = 300)
+       dpi = 600)
 

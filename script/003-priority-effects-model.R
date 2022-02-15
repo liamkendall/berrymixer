@@ -206,12 +206,12 @@ blue.identity.plot <- ggplot() +
   geom_ribbon(data=wght.pred,
               aes(ymin=LCL, ymax=UCL, x=xvar, fill=Visitor1), alpha = 0.35) + 
   geom_line(data=wght.pred, aes(x = cent_sd,
-                                y = yvar, colour=Visitor1), size=1) + 
+                                y = yvar, colour=Visitor1),show.legend = F, size=1) + 
 
   theme_bw()+ 
   #ylim(0,3.2)+
   #xlim(600,657)+
-  ggtitle("B) Initial species identity")+
+  ggtitle("(B) Initial species identity")+
   theme(plot.title = element_text(hjust = 0,face="bold",size=14),
                legend.box.background = element_rect(colour = "black"),
                legend.title = element_text(size=12),
@@ -239,7 +239,8 @@ colnames(prepplot) <- c("cent_v1", "cent_sd", "pred")
 prepplot$cent_v1 <- rep(seq(10,600,10), 100)
 prepplot <- prepplot[order(prepplot$cent_v1),]
 prepplot$cent_sd <- rep(seq(10,600,10), 100)
-prepplot$RP <- NA
+#prepplot$RP <- NA
+prepplot$YRP <- NA
 
 prepplot$cent_sd <- scale(prepplot$cent_sd, 
                           attr(berry$cent_sd, "scaled:center"), 
@@ -292,7 +293,7 @@ raster.surface <- ggplot(prepplot2, aes(y = cent_v1,
         strip.text = element_text(face = "bold",size=14,family="Helvetica"),
         panel.spacing = unit(0.5,"lines"),
         panel.border = element_rect(color = "black", fill = NA, size = 0.4))+
-  ylab("Initial visit duration") + 
+  ylab("Initial visit duration (s)") + 
   xlab("Total visit duration (s)") +
   scale_fill_gradient2(midpoint=1.5,
                        low="#2C3B75",
@@ -302,7 +303,7 @@ raster.surface <- ggplot(prepplot2, aes(y = cent_v1,
                        guide="colourbar")+
   scale_x_continuous(expand = c(0.01,0.01)) +
   scale_y_continuous(expand = c(0.01,0.01)) +
-  ggtitle("A) Initial visit duration")+
+  ggtitle("(A) Initial visit duration")+
   labs(fill="Fruit weight (g)")
 
 raster.surface
@@ -317,11 +318,11 @@ ggsave(priority.plots,file="graphs/Fig 3.jpg",
        device="jpg",
        height = 7, 
        width = 5,
-       dpi = 300)
+       dpi = 600)
 
 
 ggsave(priority.plots,
        file="graphs/Fig 3.pdf",
        height = 7,
        width = 5, 
-       dpi = 300)
+       dpi = 600)

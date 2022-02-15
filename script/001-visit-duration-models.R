@@ -54,7 +54,7 @@ AIC(blue.visit.duration.all.m,
 summary(blue.visit.duration.all.m2)
 
 ##compare trends from solo and mixed species models
-duration.pred <- emmip(blue.visit.duration.all.m2, poll.sp ~log.ord.v,
+duration.pred <- emmip(blue.visit.duration.all.m2, poll.sp ~log.ord.v+solo,
                        transform="response",
                        mult.name = "poll.sp", 
                        cov.reduce = FALSE,
@@ -81,18 +81,18 @@ blue.dur.number.plot <-
                   fill=poll.sp), 
               size=4, shape = 21,col="white",
               width=0.2, height = 0.05,
-              show.legend = TRUE,alpha=0.3)+
+              show.legend = TRUE,alpha=0.2)+
   geom_ribbon(data=duration.pred$data,
               aes(ymin=(LCL),
                   ymax=(UCL),
                   x=exp(log.ord.v),
-                 # linetype=solo,
+                 linetype=solo,
                   fill=poll.sp),
               alpha = 0.5,show.legend = T)+
   geom_line(data=duration.pred$data,
             aes(x=exp(log.ord.v),
                 yvar,
-                #linetype=solo,
+                linetype=solo,
                 colour=poll.sp),
             size=1,show.legend = F)+ 
   theme_bw() + 
@@ -118,15 +118,15 @@ blue.dur.number.plot <-
   scale_colour_manual(values = c("#2C3B75","#B8321A"))+
   scale_linetype_manual(values=c("solid","dashed"),guide = "none") +
   scale_x_continuous(breaks = c(0,5,10,15))+
-  labs(name="Pollinator taxa",
-       fill="Pollinator taxa",
-       col="Pollinator taxa")
+  labs(name="Pollinator taxon",
+       fill="Pollinator taxon",
+       col="Pollinator taxon")
 blue.dur.number.plot
 
 
 ggsave(blue.dur.number.plot,file="graphs/Fig 1.pdf",
-       height = 4, width = 5, dpi = 300)
+       height = 4, width = 5, dpi = 600)
 ggsave(blue.dur.number.plot,file="graphs/Fig 1.jpg",
-       height = 4, width = 5, dpi = 300)
+       height = 4, width = 5, dpi = 600)
 
 

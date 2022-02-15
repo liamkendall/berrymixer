@@ -199,7 +199,7 @@ bsv.identity.plot <- ggplot() +
   scale_x_continuous(breaks=seq(1,15,2))+
   #ylim(0,3.2)+
   #xlim(600,657)+
-  ggtitle("B) Initial species identity")+
+  ggtitle("(B) Initial species identity")+
   theme(plot.title = element_text(hjust = 0,face="bold",size=14),
         legend.box.background = element_rect(colour = "black"),
         legend.title = element_text(size=12),
@@ -276,7 +276,7 @@ sv.raster.surface <- ggplot(sv.prepplot2, aes(y = cent_v1,
         strip.text = element_text(face = "bold",size=14,family="Helvetica"),
         panel.spacing = unit(0.5,"lines"),
         panel.border = element_rect(color = "black", fill = NA, size = 0.4))+
-  ylab("Initial visit duration") + 
+  ylab("Initial visit duration (s)") + 
   xlab("Number of visits") +
   scale_fill_gradient2(midpoint=1.5,
                        low="#2C3B75",
@@ -286,7 +286,7 @@ sv.raster.surface <- ggplot(sv.prepplot2, aes(y = cent_v1,
                        guide="colourbar")+
   scale_x_continuous(breaks=seq(1,15,2),expand = c(0.01,0.01)) +
   scale_y_continuous(expand = c(0.01,0.01)) +
-  ggtitle("A) Initial visit duration")+
+  ggtitle("(A) Initial visit duration")+
   labs(fill="Fruit weight (g)")
 
 sv.raster.surface
@@ -302,10 +302,10 @@ ggsave(sv.priority.plots,file="graphs/Fig S2.jpg",
        device="jpg",
        height = 7, 
        width = 5,
-       dpi = 300)
+       dpi = 600)
 
 ggsave(sv.priority.plots,
        file="graphs/Fig S2.pdf",
        height = 7,
        width = 5, 
-       dpi = 300)
+       dpi = 600)
