@@ -193,7 +193,9 @@ bsv.identity.plot <- ggplot() +
   geom_ribbon(data=wght.sv.pred,
               aes(ymin=LCL, ymax=UCL, x=xvar+1, fill=Visitor1), alpha = 0.35) + 
   geom_line(data=wght.sv.pred, aes(x = subvisits+1,
-                                y = yvar, colour=Visitor1), size=1) + 
+                                y = yvar, colour=Visitor1), 
+            show.legend=F,
+            size=1) + 
   
   theme_bw()+ 
   scale_x_continuous(breaks=seq(1,15,2))+
