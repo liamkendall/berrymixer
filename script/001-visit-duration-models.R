@@ -88,7 +88,7 @@ blue.dur.number.plot <-
                   x=exp(log.ord.v),
                  linetype=solo,
                   fill=poll.sp),
-              alpha = 0.5,show.legend = T)+
+              alpha = 0.3,show.legend = T)+
   geom_line(data=duration.pred$data,
             aes(x=exp(log.ord.v),
                 yvar,
